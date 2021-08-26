@@ -61,7 +61,7 @@ struct Body {
 
 
 // kilometers to edge of system
-const SYSTEM_EXTENT_KM : f32 = 160_000_000.0 * 1000.0;
+const SYSTEM_EXTENT_KM : f32 = 250_000_000.0 * 1000.0;
 
 /// Gravitational constant
 const G : f64 = 6.673e-11;
@@ -89,6 +89,17 @@ fn main() {
         velocity: VelocityVec::new(0.0, 0.0)
     };
 
+
+    let mercury = Body {
+        display_colour: Color::rgb(200, 200, 200),
+        display_radius: 2.0,
+        mass: 3.285e25,
+        position: PositionVec::new(-67_454_000.0 * 1000.0, 0.0 /* km  to m*/ ),
+        velocity: VelocityVec::new(0.0, -47.0 * 1000.0 )  
+    };
+
+
+
     let earth = Body {
         display_colour: Color::rgb(50, 50, 200),
         display_radius: 5.0,
@@ -97,13 +108,24 @@ fn main() {
         velocity: VelocityVec::new(0.0, -107226.0 * 1000.0 / (60.0 * 60.0))  // km per hour = meters per secod
     };
 
-    // let mars = Body {
-    //     display_colour: Color::rgb(200, 50, 50),
-    //     display_radius: 4.0,
-    //     position: PositionVec::new(450.0, 100.0),
-    //     velocity: VelocityVec::new(0.0, 0.0)
-    // };
+    // speed = 35 km/s
+    let venus = Body {
+        display_colour: Color::rgb(100, 100, 100),
+        display_radius: 4.0,
+        mass: 4.867e24,
+        position: PositionVec::new(108_570_000.0 * 1000.0, 0.0),
+        velocity: VelocityVec::new(0.0, 35.26 * 1000.0)
+    };
 
+    // speed = 35 km/s
+    let mars = Body {
+        display_colour: Color::rgb(200, 50, 50),
+        display_radius: 4.0,
+        mass: 6.39e23,
+        position: PositionVec::new(0.0, -249_250_000.0 * 1000.0),
+        velocity: VelocityVec::new(24.07 * 1000.0, 0.0)
+    };
+    
     // let jupiter = Body {
     //     display_colour: Color::rgb(150, 150, 150),
     //     display_radius: 20.0,
@@ -113,7 +135,7 @@ fn main() {
 
     // The bodies will be used by the updating thread, and also the 
     // drawing thread
-    let bodies = vec![sun, earth]; //, mars, jupiter];
+    let bodies = vec![sun, mercury, venus, earth, mars];
 
     let bodies = Arc::new(Mutex::new(bodies));
 
