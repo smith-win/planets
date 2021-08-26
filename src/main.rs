@@ -161,7 +161,7 @@ fn main() {
         // pause the animation
         loop {
             // pause for a while
-            thread::sleep(std::time::Duration::from_millis(100));
+            thread::sleep(std::time::Duration::from_millis(50));
 
             let mut data = bodies.lock().unwrap(); // I think this blocks!!
             assert!(force_vecs.len() == data.len()); // prevent range checking
@@ -196,7 +196,7 @@ fn main() {
             }
 
             // update all velocities, then positions based on forces
-            let dt:f64 = 1.0 * 60.0 * 60.0 * 24.0; // one earth day as our time slice
+            let dt:f64 = 1.0 * 60.0 * 60.0 * 12.0; // half earth day as our time slice
 
             // println!("data.len {}", data.len());
             for i in 0..data.len() {
@@ -256,6 +256,10 @@ fn main() {
                     let _circle = path.circle(cx as f32 + scale * b.position.x as f32, cy as f32 + scale * b.position.y as f32, b.display_radius);
                     let p = Paint::color(b.display_colour);
                     canvas.fill_path(&mut path, p);
+
+                    // // Label for the planet
+                    // let p = Paint::color(Color::rgbf(1.0, 1.0, 1.0));
+                    // canvas.stroke_text(cx as f32 + scale * b.position.x as f32, 10.0+(cy as f32 + scale * b.position.y as f32), "Planet", p);
 
                 }
 
