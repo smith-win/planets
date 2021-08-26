@@ -1,0 +1,12 @@
+[package]
+name = "planets"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+femtovg = "0.2.2"
+glutin = "0.27.0"
+
+euclid = "0.22.6"
