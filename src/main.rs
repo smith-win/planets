@@ -1,10 +1,4 @@
-
-// Sun -- 1.98892 x 10 ^ 30 kg;
-// Earth
-//   149,597,870 -- km from sun!!
-//   107,226 km/h -- speed (so it starting at "zero") -- this is the distance
-//   5.972 × 10^24 kg
-//   moon 7.34767309 × 10^22 kg
+// https://nssdc.gsfc.nasa.gov/planetary/factsheet/
 
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -61,7 +55,13 @@ struct Body {
 
 
 // kilometers to edge of system
-const SYSTEM_EXTENT_KM : f32 = 250_000_000.0 * 1000.0;
+// const SYSTEM_EXTENT_KM : f32 = 250_000_000.0 * 1000.0;
+// const SYSTEM_EXTENT_KM : f32 = 800_000_000.0 * 1000.0;
+const SYSTEM_EXTENT_KM : f32 = 1_433_529_000.0 * 1000.0;
+
+//const SYSTEM_EXTENT_KM : f32 = 150_000_000.0 * 1000.0;
+
+
 
 /// Gravitational constant
 const G : f64 = 6.673e-11;
@@ -70,7 +70,7 @@ fn main() {
     
     let el = EventLoop::new();
     let wb = WindowBuilder::new()
-        .with_inner_size(glutin::dpi::PhysicalSize::new(1000, 600))
+        .with_inner_size(glutin::dpi::PhysicalSize::new(800, 800))
         .with_title("Silly N-Body Simulator");
 
     let windowed_context = ContextBuilder::new().with_vsync(false).build_windowed(wb, &el).unwrap();
@@ -99,6 +99,13 @@ fn main() {
     };
 
 
+    let venus = Body {
+        display_colour: Color::rgb(100, 100, 100),
+        display_radius: 4.0,
+        mass: 4.867e24,
+        position: PositionVec::new(108_570_000.0 * 1000.0, 0.0),
+        velocity: VelocityVec::new(0.0, 35.26 * 1000.0)
+    };
 
     let earth = Body {
         display_colour: Color::rgb(50, 50, 200),
@@ -108,14 +115,15 @@ fn main() {
         velocity: VelocityVec::new(0.0, -107226.0 * 1000.0 / (60.0 * 60.0))  // km per hour = meters per secod
     };
 
+    // let moon = Body {
+    //     display_colour: Color::rgb(255, 255, 255),
+    //     display_radius: 2.0,
+    //     mass: 7.34767309e22,
+    //     position: PositionVec::new( earth.position.x - 384400000.0, 0.0 ),
+    //     velocity: VelocityVec::new(0.0, earth.velocity.y - ((3700.0 * 1000.0) / (60.0 * 60.0)))  // km per hour = meters per secod
+    // };
+
     // speed = 35 km/s
-    let venus = Body {
-        display_colour: Color::rgb(100, 100, 100),
-        display_radius: 4.0,
-        mass: 4.867e24,
-        position: PositionVec::new(108_570_000.0 * 1000.0, 0.0),
-        velocity: VelocityVec::new(0.0, 35.26 * 1000.0)
-    };
 
     // speed = 35 km/s
     let mars = Body {
@@ -126,16 +134,25 @@ fn main() {
         velocity: VelocityVec::new(24.07 * 1000.0, 0.0)
     };
     
-    // let jupiter = Body {
-    //     display_colour: Color::rgb(150, 150, 150),
-    //     display_radius: 20.0,
-    //     position: PositionVec::new(550.0, 100.0),
-    //     velocity: VelocityVec::new(0.0, 0.0)
-    // };
+    let jupiter = Body {
+        display_colour: Color::rgb(150, 150, 100),
+        display_radius: 10.0,
+        mass:  	1.89813e27 ,
+        position: PositionVec::new(0.0, -751_850_000.0 * 1000.0),
+        velocity: VelocityVec::new(13.06 * 1000.0, 0.0)
+    };
+
+    let saturn = Body {
+        display_colour: Color::rgb(150, 150, 150),
+        display_radius: 8.0,
+        mass:  	5.6834e26 ,
+        position: PositionVec::new(0.0, -1_433_529_000.0  * 1000.0),
+        velocity: VelocityVec::new(9.68 * 1000.0, 0.0)
+    };
 
     // The bodies will be used by the updating thread, and also the 
     // drawing thread
-    let bodies = vec![sun, mercury, venus, earth, mars];
+    let bodies = vec![sun, mercury, venus, earth, mars, jupiter, saturn];
 
     let bodies = Arc::new(Mutex::new(bodies));
 
@@ -158,10 +175,12 @@ fn main() {
             v
         };
 
+
+        let mut count = 0;
         // pause the animation
         loop {
             // pause for a while
-            thread::sleep(std::time::Duration::from_millis(50));
+            thread::sleep(std::time::Duration::from_millis(10));
 
             let mut data = bodies.lock().unwrap(); // I think this blocks!!
             assert!(force_vecs.len() == data.len()); // prevent range checking
@@ -187,7 +206,7 @@ fn main() {
                         //println!("i={}, dx={}, dy={}, d={}", i, dx, dy, d);
 
                         // TODO -- softener - see what this is
-                        let f = (G * data[i].mass * data[j].mass) as f64 / (d*d + eps*eps);
+                        let f = (G * data[i].mass * data[j].mass) as f64 / (d*d /*+ eps*eps*/);
                         net_force.x += f * dx / d;
                         net_force.y += f * dy / d;
                         //println!("i={}, f={}, netforce {:?}", i, f, net_force);
@@ -215,6 +234,11 @@ fn main() {
             if el_proxy.send_event(()).is_err() {
                 // exit if event loop gone
                 return;
+            }
+            count += 1;
+            if count > 365 *2 {
+                count = 0;
+                println!("Earth year!")
             }
         }
 
@@ -257,12 +281,20 @@ fn main() {
                     let p = Paint::color(b.display_colour);
                     canvas.fill_path(&mut path, p);
 
-                    // // Label for the planet
-                    // let p = Paint::color(Color::rgbf(1.0, 1.0, 1.0));
-                    // canvas.stroke_text(cx as f32 + scale * b.position.x as f32, 10.0+(cy as f32 + scale * b.position.y as f32), "Planet", p);
 
                 }
 
+                // // Label for the planet
+                let mut p = Paint::color(Color::rgb(255, 255, 255));
+                p.set_text_align(femtovg::Align::Center);
+                p.set_font_size(9.0);
+
+                // match canvas.stroke_text(cx as f32 + scale * b.position.x as f32, 10.0+(cy as f32 + scale * b.position.y as f32), "Planet", p) {
+                match canvas.fill_text(50.0, 50.0, "Planet", p) {
+                    Err(x) => println!("{:?}", x),
+                    _ => {}
+                }
+                
                 canvas.flush();
                 windowed_context.swap_buffers().unwrap();
 
